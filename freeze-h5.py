@@ -3,8 +3,8 @@ import tensorflow as tf
 from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
 
 if __name__ == '__main__':
-    model = tf.keras.models.load_model('model.h5', compile=False)
     tf.keras.backend.set_learning_phase(0)
+    model = tf.keras.models.load_model('model.h5', compile=False)
     full_model = tf.function(lambda x: model(x))
     full_model = full_model.get_concrete_function(tf.TensorSpec(model.inputs[0].shape, model.inputs[0].dtype))
 
@@ -25,11 +25,18 @@ if __name__ == '__main__':
 
     tf.io.write_graph(
         graph_or_graph_def=frozen_func.graph,
-        logdir="./frozen_models",
-        name="frozen_graph.pb",
+        logdir=".",
+        name="model.pb",
         as_text=False
     )
 
-    net = cv2.dnn.readNet(r'frozen_models\frozen_graph.pb')
+    tf.io.write_graph(
+        graph_or_graph_def=frozen_func.graph,
+        logdir=".",
+        name="model.pbtxt",
+        as_text=True
+    )
+
+    net = cv2.dnn.readNet(r'model.pb')
     for layer_name in net.getLayerNames():
         print(layer_name)
