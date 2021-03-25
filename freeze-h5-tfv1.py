@@ -1,6 +1,6 @@
 import cv2
 import tensorflow as tf
-from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
+from tensorflow.python.framework.graph_util import convert_variables_to_constants
 
 if __name__ == '__main__':
     with tf.Graph().as_default():
@@ -9,13 +9,10 @@ if __name__ == '__main__':
             tf.keras.backend.set_learning_phase(0)
             model = tf.keras.models.load_model('model.h5', compile=False)
 
-            from tensorflow.python.framework.graph_util import convert_variables_to_constants
-
             graph = session.graph
             with graph.as_default():
-                freeze_var_names = list(set(v.op.name for v in tf.global_variables()).difference(None or []))
+                freeze_var_names = list(set(v.op.name for v in tf.global_variables()))
                 output_names = [out.op.name for out in model.outputs]
-                output_names = output_names or []
                 output_names += [v.op.name for v in tf.global_variables()]
                 input_graph_def = graph.as_graph_def()
                 for node in input_graph_def.node:
